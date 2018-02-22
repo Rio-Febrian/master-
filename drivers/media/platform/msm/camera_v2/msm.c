@@ -279,12 +279,12 @@ void msm_delete_stream(unsigned int session_id, unsigned int stream_id)
 
 		write_lock_irqsave(&session->stream_rwlock, wl_flags);
 		try_count++;
-		stream = msm_queue_find(&session->stream_q, struct msm_stream,
-			list, __msm_queue_find_stream, &stream_id);
+	stream = msm_queue_find(&session->stream_q, struct msm_stream,
+		list, __msm_queue_find_stream, &stream_id);
 
 		if (!stream) {
 			write_unlock_irqrestore(&session->stream_rwlock, wl_flags);
-			return;
+		return;
 		}
 
 		if (msm_vb2_get_stream_state(stream) != 1) {
@@ -292,12 +292,12 @@ void msm_delete_stream(unsigned int session_id, unsigned int stream_id)
 			continue;
 		}
 
-		spin_lock_irqsave(&(session->stream_q.lock), flags);
-		list_del_init(&stream->list);
-		session->stream_q.len--;
+	spin_lock_irqsave(&(session->stream_q.lock), flags);
+	list_del_init(&stream->list);
+	session->stream_q.len--;
 		kfree(stream);
 		stream = NULL;
-		spin_unlock_irqrestore(&(session->stream_q.lock), flags);
+	spin_unlock_irqrestore(&(session->stream_q.lock), flags);
 		write_unlock_irqrestore(&session->stream_rwlock, wl_flags);
 		break;
 	}
@@ -367,6 +367,11 @@ static void msm_add_sd_in_position(struct msm_sd_subdev *msm_subdev,
 	struct msm_sd_subdev *temp_sd;
 
 	list_for_each_entry(temp_sd, sd_list, list) {
+		if (temp_sd == msm_subdev) {
+			pr_err("%s :Fail to add the same sd %d\n",
+				__func__, __LINE__);
+			return;
+		}
 		if (msm_subdev->close_seq < temp_sd->close_seq) {
 			list_add_tail(&msm_subdev->list, &temp_sd->list);
 			return;
@@ -446,6 +451,7 @@ int msm_create_session(unsigned int session_id, struct video_device *vdev)
 	msm_enqueue(msm_session_q, &session->list);
 	mutex_init(&session->lock);
 	mutex_init(&session->lock_q);
+	rwlock_init(&session->stream_rwlock);
 	return 0;
 }
 
@@ -638,6 +644,15 @@ static long msm_private_ioctl(struct file *file, void *fh,
 		if (module_init_status)
 			wake_up(&cam_dummy_queue.state_wait);
 		return rc;
+	}
+
+	switch (cmd) {
+	case MSM_CAM_V4L2_IOCTL_NOTIFY:
+	case MSM_CAM_V4L2_IOCTL_CMD_ACK:
+	case MSM_CAM_V4L2_IOCTL_NOTIFY_ERROR:
+		break;
+	default:
+		return -ENOTTY;
 	}
 
 	session_id = event_data->session_id;
