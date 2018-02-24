@@ -1,0 +1,16 @@
+# Coded by Ev0lVE3 #BEHEMOTH
+ui_print("-- Mounting partitions");
+ifelse(is_mounted("/system"), unmount("/system"));
+mount("ext4", "EMMC", "/dev/block/bootdevice/by-name/system", "/system");
+ui_print("-- Installing WLAN module");
+package_extract_file("behemoth/modules/wlan", "/system/lib/modules/pronto/pronto_wlan.ko");
+set_perm(0, 0, 0644, "/system/lib/modules/pronto/pronto_wlan.ko");
+ui_print("-- Installing Secure Storage module");
+package_extract_file("behemoth/modules/libsecure", "/system/vendor/lib/libsecure_storage.so");
+set_perm(0, 0, 0644, "/system/vendor/lib/libsecure_storage.so");
+package_extract_file("behemoth/modules/libsecure_jni", "/system/vendor/lib/libsecure_storage_jni.so");
+set_perm(0, 0, 0644, "/system/vendor/lib/libsecure_storage_jni.so");
+ui_print("-- Installing the kernel image");
+package_extract_file("behemoth/kernel/boot.img", "/dev/block/bootdevice/by-name/boot");;
+ui_print("-- Done, you have successfully flashed BEHEMOTH and it's modules");
+ifelse(is_mounted("/system"), unmount("/system"));
