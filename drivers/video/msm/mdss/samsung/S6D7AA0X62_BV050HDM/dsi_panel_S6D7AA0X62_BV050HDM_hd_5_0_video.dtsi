@@ -26,6 +26,7 @@
 		qcom,mdss-dsi-panel-framerate = <65>;
 		qcom,ulps-enabled;
 		qcom,panel-allow-phy-poweroff;
+		qcom,mdss-idle-power-collapse-enabled;
 		qcom,mdss-dsi-virtual-channel-id = <0>;
 		qcom,mdss-dsi-stream = <0>;
 		qcom,mdss-dsi-panel-width = <720>;
